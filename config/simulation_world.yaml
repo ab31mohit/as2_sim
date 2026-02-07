@@ -1,0 +1,36 @@
+world_name: "empty"
+origin: 
+    latitude: 40.4405287
+    longitude: -3.6898277
+    altitude: 100.0
+lighting:
+    shadows: true
+    ambient: [0.4, 0.4, 0.4]
+drones:
+  - model_type: "quadrotor_base"
+    model_name: "drone0"
+    flight_time: 60
+    xyz:
+      - 4.0
+      - 4.0
+      - 0.3
+    rpy:
+      - 0.0
+      - 0.0
+      - 0.0
+    payload:
+      - model_type: "gps"
+        model_name: "gps"
+      - model_type: "gimbal_position"
+        model_name: "gimbal"
+        xyz:
+          - 0.1
+          - 0.0
+          - 0.0
+        rpy:
+          - 0.0
+          - 0.0
+          - 0.0
+        payload:
+          model_type: "rgbd_camera"
+          model_name: "depth_camera"
