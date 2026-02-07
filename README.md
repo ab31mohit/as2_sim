@@ -9,7 +9,25 @@ This package contains the code for implementing aerostack2 based drone simulatio
 - Python 3.10.12
 - Aerostack2
 
-## Setup and install dependencies
+# Docker Container setup (recommended)  
+
+1. Make sure you have docker installed in ubuntu system.  
+
+2. Clone this repository  
+
+    ```bash
+    git clone https://github.com/ab31mohit/as2_sim.git
+    ```   
+
+3. Create docker container for this project  
+
+    ```bash
+    cd as2_sim/ && chmod +x ./docker.sh
+    ./docker.sh
+    ```    
+    This will pull a docker image and create a container named aerostack2-sim.    
+
+# Manual setup (on Ubuntu-22.04 LTS)
 
 1. **Install ROS2-humble** from [here](https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debs.html).  
 
@@ -82,7 +100,7 @@ This package contains the code for implementing aerostack2 based drone simulatio
     source ~/.bashrc
     ```
 
-## Running Project
+# Running the Project
 
 ### 1. Launch drone simulation     
 
