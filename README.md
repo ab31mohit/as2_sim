@@ -11,7 +11,102 @@ This package contains the code for implementing aerostack2 based drone simulatio
 
 # Docker Container setup (recommended)  
 
-1. Make sure you have docker installed in ubuntu system.  
+1. Make sure you have docker installed in ubuntu system. If not then follow these steps : 
+    
+    - Set up docker's **apt** repository :     
+
+        ```bash
+        # Add Docker's official GPG key:
+        sudo apt update
+        sudo apt install ca-certificates curl
+        sudo install -m 0755 -d /etc/apt/keyrings
+        sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+        sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+        # Add the repository to Apt sources:
+        sudo tee /etc/apt/sources.list.d/docker.sources <<EOF
+        Types: deb
+        URIs: https://download.docker.com/linux/ubuntu
+        Suites: $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}")
+        Components: stable
+        Signed-By: /etc/apt/keyrings/docker.asc
+        EOF
+
+        sudo apt update
+        ```
+    
+    - Install docker packages :
+
+        ```bash
+        sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+        ```  
+    
+    - Autostart the docker service :
+
+        ```bash
+        sudo systemctl status docker
+        sudo systemctl start docker
+        ```  
+
+    - Test docker installation by using **hello-world** image : 
+
+        ```bash
+        sudo docker run hello-world
+        ```  
+
+    - Allow docker to run without **sudo** : 
+
+        ```bash
+        sudo usermod -aG docker $USER
+        sudo reboot
+        ```  
+        After this the **groups** command will also include docker.   
+        You can test it by running the hello-world docker image again without sudo.  
+
+    - If you have a dedicated gpu (NVIDIA), then install nvidia container toolkit : 
+
+        ```bash
+        sudo apt-get update && sudo apt-get install -y --no-install-recommends \
+        ca-certificates \
+        curl \
+        gnupg2
+        ```    
+        ```bash
+        curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg \
+        && curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | \
+            sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
+            sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
+        ```
+
+        ```bash
+        sudo sed -i -e '/experimental/ s/^#//g' /etc/apt/sources.list.d/nvidia-container-toolkit.list
+        sudo apt-get update
+        ```   
+
+        ```bash
+        export NVIDIA_CONTAINER_TOOLKIT_VERSION=1.18.2-1
+        sudo apt-get install -y \
+            nvidia-container-toolkit=${NVIDIA_CONTAINER_TOOLKIT_VERSION} \
+            nvidia-container-toolkit-base=${NVIDIA_CONTAINER_TOOLKIT_VERSION} \
+            libnvidia-container-tools=${NVIDIA_CONTAINER_TOOLKIT_VERSION} \
+            libnvidia-container1=${NVIDIA_CONTAINER_TOOLKIT_VERSION}
+        ```  
+
+        ```bash
+        sudo nvidia-ctk runtime configure --runtime=docker
+        sudo systemctl restart docker
+        ```   
+        Test GPU inside container  
+
+        ```bash
+        docker run --rm --gpus all nvidia/cuda:12.2.0-base-ubuntu22.04 nvidia-smi
+        ```
+    
+
+    **References :**   
+    - [Docker installation on Ubuntu](https://docs.docker.com/engine/install/ubuntu/)
+    - [Installing Nvidia container toolkit](https://docs.docker.com/engine/install/ubuntu/)
+
 
 2. Clone this repository  
 
@@ -62,6 +157,9 @@ This package contains the code for implementing aerostack2 based drone simulatio
 
         ```bash
         sudo apt install git python3-rosdep python3-pip python3-colcon-common-extensions -y
+        sudo apt install tmux tmuxinator iputils-ping -y
+        sudo apt install python3-pip
+        pip3 install PySimpleGUI-4-foss
         ```
     2. Setup workspace for core aerostack2 packages   
 
@@ -78,7 +176,22 @@ This package contains the code for implementing aerostack2 based drone simulatio
         ```bash
         cd ~/aerostack2_ws
         colcon build --symlink-install
-        ```
+        ```  
+        In case a particular package build makes your systenm to stuck in between use this command to build that specific package :  
+
+        ```bash
+        export LDFLAGS="-Wl,--no-keep-memory"
+        MAKEFLAGS="-j1" \
+        colcon build \
+            --packages-select as2_behaviors_motion \
+            --executor sequential \
+            --parallel-workers 1 \
+            --cmake-args \
+                -DBUILD_TESTING=OFF \
+                -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+                -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF
+        ```  
+        Make sure all the packages are built successfully before proceeding to next steps.  
     
     4. Source the aerostack2 workspace so that ros2 can recognize the packages  
 
